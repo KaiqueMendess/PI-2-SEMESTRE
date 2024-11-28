@@ -1,0 +1,252 @@
+/* Estilo básico para o layout */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f4f7;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container geral */
+.dashboard-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Animação para a logo */
+#logo {
+    display: block;
+    margin: 0 auto 20px; /* Centraliza a logo e adiciona espaçamento inferior */
+    max-width: 100%; /* Garante que a logo não ultrapasse os limites da div */
+    height: auto; /* Mantém a proporção da logo */
+    max-height: 150px; /* Ajuste do tamanho máximo da logo */
+    border-radius: 20%;
+    
+  }
+
+/* Sidebar */
+.sidebar {
+    width: 210px;
+    background-color: #c53c3c;
+    color: white;
+    padding: 30px 20px;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.sidebar-header p {
+    margin-top: 10px;
+    font-size: 15px;
+    color: #ffffff;
+}
+
+.sidebar-nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.sidebar-nav li {
+    margin: 15px 0;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar-nav a:hover {
+    background-color: #a10202;
+    padding-left: 12px;
+}
+
+.sidebar-nav i {
+    margin-right: 10px;
+}
+
+/* Conteúdo Principal */
+.content {
+    flex: 1;
+    padding: 30px;
+    background: linear-gradient(135deg, #f9f9f9, #e8e8e8);
+    overflow-y: auto;
+    border-radius: 10px;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Cabeçalho */
+.header {
+    margin-bottom: 30px;
+    text-align: center;
+    background: #fff;
+    color: #444;
+    padding: 20px 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.header p {
+    font-size: 18px;
+    color: #444;
+}
+
+/* Cards */
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Melhorias no Card */
+.card {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card h3 {
+    font-size: 22px;
+    color: #444;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+.card ul li {
+    margin: 8px 0;
+    font-size: 16px;
+    color: #555;
+}
+
+.card a {
+    display: inline-block;
+    margin-top: 20px;
+    background: linear-gradient(90deg, #c53c3c, #a10202);
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.card a:hover {
+    background: linear-gradient(90deg, #9b2a2a, #7a0202);
+    transform: scale(1.05);
+}
+
+/* Seções Específicas */
+.dashboard-section {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.dashboard-section h3 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.dashboard-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.dashboard-section ul li {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+/* Botões Gerais */
+.btn {
+    display: inline-block;
+    background: linear-gradient(90deg, #d45151, #e21212);
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.btn:hover {
+    background: linear-gradient(90deg, #d45151, #e21212);
+    transform: scale(1.05);
+}
+
+/* Design Responsivo */
+@media screen and (max-width: 768px) {
+    .content {
+        padding: 20px;
+    }
+
+    .header h1 {
+        font-size: 26px;
+    }
+
+    .header p {
+        font-size: 14px;
+    }
+
+    .dashboard-cards {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .dashboard-section {
+        padding: 15px;
+    }
+
+    .btn {
+        font-size: 14px;
+        padding: 10px 15px;
+    }
+}
+/* Ajuste de largura nos cards para documentos */
+.card ul li a {
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow: hidden;
+    white-space: normal;
+    text-overflow: ellipsis;
+}
