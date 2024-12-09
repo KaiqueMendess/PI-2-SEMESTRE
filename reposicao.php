@@ -465,7 +465,7 @@ td:last-child:contains("Aprovada") {
                             </td>
                             <td>
                                 <!-- Botão de Editar, só visível para reposições com status 'Rejeitada' -->
-                                <?php if ($reposicao['status'] === 'Reprovada'): ?>
+                                <?php if ($reposicao['status'] === 'Rejeitada'): ?>
                                     <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editModal<?php echo $reposicao['id']; ?>">Editar</button>
                                 <?php else: ?>
                                     <button class="btn btn-secondary" disabled>Editar</button>
