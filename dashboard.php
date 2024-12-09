@@ -1,149 +1,187 @@
-<?php
-session_start();
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Sistema de Irrigação</title>
+  <link rel="stylesheet" href="assets/css/dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-// Verificar se o usuário está logado e se o perfil é 'coordenador'
-if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'coordenador') {
-    header("Location: login.php"); // Redireciona para o login se não for coordenador
-    exit;
+  <link rel="shortcut icon" type="image/png" href="assets/img/logo.jpg">
+  <style>
+    .chart {
+  width: 600px !important; /* Faz o gráfico ocupar toda a largura disponível */
+  height: 200px !important; /* Ajusta a altura conforme necessário */
 }
 
-require 'db.php'; // Conexão com o banco de dados
-
-// Obter informações do coordenador
-$usuario_id = $_SESSION['user_id'];
-$usuario_nome = $_SESSION['user_nome'];
-$usuario_email = $_SESSION['user_email'];
-
-// Obter dados para os gráficos e indicadores
-$totalJustificativas = $pdo->query("SELECT COUNT(*) FROM Justificativas")->fetchColumn();
-$totalAprovadas = $pdo->query("SELECT COUNT(*) FROM Justificativas WHERE status = 'aprovado'")->fetchColumn();
-$totalRejeitadas = $pdo->query("SELECT COUNT(*) FROM Justificativas WHERE status = 'rejeitado'")->fetchColumn();
-$totalPendentes = $totalJustificativas - $totalAprovadas - $totalRejeitadas;
-$totalReposicoesPendentes = $pdo->query("SELECT COUNT(*) FROM reposicoes WHERE status = 'pendente'")->fetchColumn();
-$totalReposicoesRealizadas = $pdo->query("SELECT COUNT(*) FROM reposicoes WHERE status = 'realizado'")->fetchColumn();
-
-?>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dashboard do Coordenador</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="dashboard.css">
-    <link rel="stylesheet" href="dashboard_professor.css">
+  </style>
 </head>
 <body>
-<div class="dashboard-container">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <img src="img/logo.jpg" id="logo" alt="Logo">
-                <h2>Bem-vindo, <?php echo $usuario_nome; ?>!</h2>
-                <p>Email: <?php echo $usuario_email; ?></p>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                <li class="nav-item"><a href="coordenador_dashboard.php" class="nav-link text-light"><i class="fas fa-home"></i> Início</a></li>
-                <li class="nav-item"><a href="justificativa.php" class="nav-link text-light"><i class="fas fa-clipboard-check"></i> Justificativas</a></li>
-                <li class="nav-item"><a href="reposicao.php" class="nav-link text-light"><i class="fas fa-sync-alt"></i> Reposições</a></li>
-                <li class="nav-item"><a href="usuarios.php" class="nav-link text-light"><i class="fas fa-users-cog"></i> Gerenciar Usuários</a></li>
-                <li class="nav-item"><a href="relatorios.php" class="nav-link text-light"><i class="fas fa-file-alt"></i> Relatórios</a></li>
-                <li class="nav-item"><a href="notificacoes.php" class="nav-link text-light"><i class="fas fa-bell"></i> Notificações</a></li>
-                <li class="nav-item"><a href="logout.php" class="nav-link text-light"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
-                </ul>
-            </nav>
+  <div class="container">
+    <!-- Barra Lateral -->
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <img src="assets/img/logo.jpg">
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="dashboard.php">Visão Geral</a></li>
+        <li><a href="http://10.0.0.139">Sensor ativo</a></li>
+        <li><a href="perfil.php">Perfil</a></li>
+        <li><a href="vinculo.php">Sensores</a></li>
+        <li><a href="ajuda.php">Ajuda</a></li>
+        <li><a href="index.php" id="logout">Sair</a></li>
+      </ul>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <div class="main-content">
+      <header class="header">
+        <h1>Dashboard - Sistema de Irrigação de Alface</h1>
+        <section class="sensor-map-container" id="sensor-map-container">
+          <h2>Mapeamento dos Sensores</h2>
+          <div class="sensor-map" id="sensor-map"></div>
+        </section>          
+      </header>
+
+      <!-- Visão geral -->
+      <section class="overview" id="overview">
+        <h2>Visão Geral do Sistema</h2>
+        <div class="status">
+          <div class="status-item">
+            <p>Status dos Sensores:</p>
+            <span id="sensor-status" class="status-on">Carregando...</span>
+          </div>
+          <div class="status-item">
+            <p>Total de Sensores Conectados:</p>
+            <span id="total-sensors">Carregando...</span>
+          </div>
+          <div class="status-item">
+            <p>Sensores Offline:</p>
+            <span id="offline-sensors">Carregando...</span>
+          </div>
         </div>
+      </section>
 
-      
-        <!-- Main Content -->
-        <div class="main-content p-4 w-100">
-            <div class="container">
-                <h2 class="mb-4">Dashboard do Coordenador</h2>
-                
-                <!-- Indicadores -->
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <div class="card text-white bg-primary">
-                            <div class="card-body">
-                                <h5 class="card-title">Total de Justificativas</h5>
-                                <p class="card-text fs-2"><?php echo $totalJustificativas; ?></p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-white bg-success">
-                            <div class="card-body">
-                                <h5 class="card-title">Aprovadas</h5>
-                                <p class="card-text fs-2"><?php echo $totalAprovadas; ?></p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-white bg-danger">
-                            <div class="card-body">
-                                <h5 class="card-title">Rejeitadas</h5>
-                                <p class="card-text fs-2"><?php echo $totalRejeitadas; ?></p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-white bg-warning">
-                            <div class="card-body">
-                                <h5 class="card-title">Pendentes</h5>
-                                <p class="card-text fs-2"><?php echo $totalPendentes; ?></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gráficos -->
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5 class="mb-3">Status das Justificativas</h5>
-                        <canvas id="graficoJustificativas"></canvas>
-                    </div>
-                    <div class="col-md-6">
-                        <h5 class="mb-3">Status das Reposições</h5>
-                        <canvas id="graficoReposicoes"></canvas>
-                    </div>
-                </div>
-
-                <!-- Ações Rápidas -->
-                <div class="mt-4">
-                    <h5>Ações Rápidas</h5>
-                    <a href="aprovar_justificativas.php" class="btn btn-success me-2">Aprovar Justificativas</a>
-                    <a href="gerenciar_reposicoes.php" class="btn btn-info">Gerenciar Reposições</a>
-                </div>
-            </div>
+      <!-- Gráficos e Estatísticas -->
+      <section class="charts" id="charts">
+        <h2>Gráficos e Estatísticas</h2>
+        <div class="chart-container">
+          <div class="chart-item">
+            <h3>Histórico de Umidade</h3>
+            <canvas id="humidity-chart" class="chart" width="800" height="400"></canvas>
+          </div>
         </div>
+      </section>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Gráfico de Justificativas
-        var ctxJustificativas = document.getElementById('graficoJustificativas').getContext('2d');
-        var graficoJustificativas = new Chart(ctxJustificativas, {
-            type: 'pie',
-            data: {
-                labels: ['Aprovadas', 'Rejeitadas', 'Pendentes'],
-                datasets: [{
-                    data: [<?= $totalAprovadas ?>, <?= $totalRejeitadas ?>, <?= $totalPendentes ?>],
-                    backgroundColor: ['#28a745', '#dc3545', '#ffc107']
-                }]
-            }
-        });
+    <!-- Rodapé -->
+    <footer class="footer">
+      <p>&copy; 2024 Sistema de Irrigação - Todos os direitos reservados.</p>
+    </footer>
+  </div>
 
-        // Gráfico de Reposições
-        var ctxReposicoes = document.getElementById('graficoReposicoes').getContext('2d');
-        var graficoReposicoes = new Chart(ctxReposicoes, {
-            type: 'doughnut',
-            data: {
-                labels: ['Pendentes', 'Realizadas'],
-                datasets: [{
-                    data: [<?= $totalReposicoesPendentes ?>, <?= $totalReposicoesRealizadas ?>],
-                    backgroundColor: ['#ffc107', '#007bff']
-                }]
-            }
+  <!-- Importando módulos do Firebase -->
+  <script type="module">
+    // Importação dos módulos do Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getDatabase, ref, onValue, get, child } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+    // Configuração do Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyBKxeTlLyWREGLcENJD4iMiM8_feKKiQO0",
+        authDomain: "pi3semestre-23089.firebaseapp.com",
+        databaseURL: "https://pi3semestre-23089-default-rtdb.firebaseio.com",
+        projectId: "pi3semestre-23089",
+        storageBucket: "pi3semestre-23089.appspot.com",
+        messagingSenderId: "115992833105",
+        appId: "1:115992833105:web:6743b38c81aa66dd5edc70"
+    };
+
+    // Inicializando o Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Função para buscar dados dos sensores
+    function buscarDadosSensores() {
+        const sensoresRef = ref(database, 'sensores');
+        onValue(sensoresRef, (snapshot) => {
+            const sensores = snapshot.val();
+            const totalSensores = Object.keys(sensores || {}).length;
+            const offlineSensores = Object.values(sensores || {}).filter(sensor => !sensor.ativo).length;
+
+            document.getElementById('sensor-status').textContent = totalSensores > 0 ? 'Ativos' : 'Inativos';
+            document.getElementById('total-sensors').textContent = totalSensores;
+            document.getElementById('offline-sensors').textContent = offlineSensores;
         });
-    </script>
+    }
+
+    // Carregar sensores no mapa
+    function carregarMapaSensores() {
+        const mapContainer = document.getElementById('sensor-map');
+        mapContainer.innerHTML = '';
+
+        const sensoresRef = ref(database, 'sensores');
+        get(sensoresRef).then((snapshot) => {
+            const sensores = snapshot.val();
+            Object.keys(sensores || {}).forEach((sensorId) => {
+                const sensorDiv = document.createElement('div');
+                sensorDiv.classList.add('sensor');
+                sensorDiv.textContent = `Sensor ${sensorId}`;
+                mapContainer.appendChild(sensorDiv);
+            });
+        });
+    }
+
+    // Gráfico de umidade
+    const ctx = document.getElementById('humidity-chart').getContext('2d');
+    const humidityChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [], // Labels para o eixo X (tempo)
+        datasets: [{
+          label: 'Umidade',
+          data: [], // Dados de umidade
+          borderColor: 'rgb(75, 192, 192)',
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: { type: 'linear', position: 'bottom' },
+          y: { min: 0, max: 100 }
+        }
+      }
+    });
+
+    // Atualiza o gráfico com os dados de umidade em tempo real
+    function atualizarGraficoDeUmidade() {
+        const sensoresRef = ref(database, 'sensores');
+        onValue(sensoresRef, (snapshot) => {
+            const sensores = snapshot.val();
+            const timestamps = [];
+            const umidades = [];
+
+            Object.values(sensores || {}).forEach((sensor) => {
+                if (sensor.umidade != null) {
+                    timestamps.push(Date.now()); // Timestamp de cada leitura
+                    umidades.push(sensor.umidade); // Valor de umidade
+                }
+            });
+
+            // Atualiza os dados do gráfico
+            humidityChart.data.labels = timestamps;
+            humidityChart.data.datasets[0].data = umidades;
+            humidityChart.update();
+        });
+    }
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+        buscarDadosSensores();
+        carregarMapaSensores();
+        atualizarGraficoDeUmidade(); // Inicia a atualização do gráfico em tempo real
+    });
+  </script>
 </body>
 </html>

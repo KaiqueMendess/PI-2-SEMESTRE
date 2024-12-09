@@ -1,0 +1,336 @@
+/* Reset e Box-sizing */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Variáveis de cor */
+:root {
+    --cor-fundo-claro: #ffffff;
+    --cor-fundo-escuro: #58af7c;
+    --cor-texto-claro: #000000;
+    --cor-texto-escuro: #2c3e50;
+    --cor-primaria: #58af7c;
+    --cor-alerta: #e74c3c;
+    --cor-sucesso: #58af7c;
+    --cor-warning: #ff9800;  /* Cor de aviso */
+}
+
+/* Corpo da página */
+body {
+    background-color: var(--cor-fundo-claro);
+    color: var(--cor-texto-claro);
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+}
+
+/* Tema escuro */
+body.tema-escuro {
+    background-color: var(--cor-fundo-escuro);
+    color: var(--cor-texto-escuro);
+}
+
+/* Botões */
+button {
+    background-color: var(--cor-primaria);
+    color: var(--cor-texto-claro);
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s; /* Suave ao hover */
+}
+
+button:hover {
+    background-color: #2980b9; /* Cor mais escura para hover */
+    transform: scale(1.05); /* Leve aumento ao hover */
+}
+
+button:focus {
+    outline: 3px solid rgba(41, 128, 185, 0.7); /* Destaque no foco */
+}
+
+/* Layout geral */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Cabeçalho */
+.header {
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    color: var(--cor-primaria);
+    margin-bottom: 10px;
+}
+
+/* Conteúdo principal */
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+section {
+    background-color: var(--cor-fundo-claro);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s; /* Animação sutil ao passar o mouse */
+}
+
+section:hover {
+    transform: scale(1.02);
+}
+
+section h2 {
+    font-size: 1.8rem;
+    color: var(--cor-primaria);
+    margin-bottom: 15px;
+}
+
+/* Status de sensores */
+.status-item {
+    margin-bottom: 15px;
+}
+
+.status-item p {
+    font-weight: bold;
+}
+
+.status-on {
+    color: var(--cor-sucesso);
+}
+
+.status-off {
+    color: var(--cor-alerta);
+}
+
+.status-item span {
+    font-size: 1.2rem;
+}
+
+/* Mapa de sensores */
+.sensor-map-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.sensor-map {
+    display: grid;
+    grid-template-columns: repeat(4, 120px);
+    grid-template-rows: repeat(2, 120px);
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    height: 250px;
+    border: 2px solid #ddd;
+    background-color: #f0f0f0;
+    margin: 0 auto;
+}
+
+.sensor {
+    width: 120px;
+    height: 120px;
+    background-image: url('terra.jpg'); /* Caminho da imagem */
+    background-size: cover;
+    background-position: center;
+    border-radius: 5px;
+    animation: pulse 3s infinite;
+    transition: background-color 0.3s, transform 0.2s;
+    cursor: pointer;
+}
+
+.sensor:hover {
+    transform: scale(1.05);
+}
+
+.sensor.active {
+    background-color: rgba(0, 255, 0, 0.7); /* Ativo - Verde */
+}
+
+.sensor-info {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    text-align: center;
+    font-size: 14px;
+    color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Animação pulsante */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+}
+
+/* Gráficos */
+.chart-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.chart-item {
+    width: 48%;
+}
+
+.chart {
+    background-color: #e3e3e3;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+}
+
+/* Controle manual */
+.manual-control {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.btn {
+    padding: 10px 20px;
+    background-color: var(--cor-primaria);
+    color: var(--cor-texto-claro);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn:hover {
+    background-color: #2980b9;
+    transform: scale(1.05);
+}
+
+/* Notificações */
+.notifications-list {
+    list-style-type: none;
+}
+
+.notifications-list p {
+    background-color: var(--cor-warning);
+    color: var(--cor-texto-claro);
+    padding: 10px;
+    border-radius: 5px;
+    margin: 5px 0;
+}
+
+/* Rodapé */
+footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 0.9rem;
+    color: #777;
+}
+
+/* Barra Lateral */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 230px;
+    height: 100%;
+    background-color: var(--cor-fundo-escuro);
+    padding-top: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+/* Estilização da logo na sidebar */
+.sidebar-header img {
+    width: 80%; /* Ajusta a largura da imagem para caber na barra lateral */
+    max-width: 150px; /* Define um tamanho máximo */
+    border-radius: 50%; /* Torna a imagem circular */
+    display: block; /* Garante que a imagem seja tratada como um bloco */
+    margin: 0 auto; /* Centraliza a imagem horizontalmente */
+    padding: 10px; /* Espaço interno ao redor da imagem */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra leve para destaque */
+}
+
+.sidebar-header h3 {
+    font-size: 1.5rem;
+    color: var(--cor-texto-claro);
+    font-weight: 600;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar-menu li {
+    margin: 15px 0;
+}
+
+.sidebar-menu li a {
+    color: var(--cor-texto-claro);
+    text-decoration: none;
+    font-size: 1.1rem;
+    padding: 10px 20px;
+    display: block;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.sidebar-menu li a:hover {
+    background-color: var(--cor-primaria);
+    transform: translateX(5px); /* Leve deslocamento para a direita */
+}
+
+/* Responsividade */
+@media screen and (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-container {
+        flex-direction: column;
+    }
+
+    .chart-item {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .sidebar {
+        width: 200px;
+    }
+
+    .main-content-body {
+        grid-template-columns: 1fr;
+    }
+}

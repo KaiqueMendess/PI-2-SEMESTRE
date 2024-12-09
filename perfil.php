@@ -1,185 +1,169 @@
 <?php
 session_start();
-
-// Verificar se o usuário está logado e se o perfil é 'professor'
-if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'professor') {
-    header("Location: login.php");
-    exit;
-}
-
-require 'db.php'; // Conexão com o banco de dados
-
-// Obter informações do professor
-$usuario_id = $_SESSION['user_id'];
-$usuario_nome = $_SESSION['user_nome'];
-$usuario_email = $_SESSION['user_email'];
-
-// Consultar dados do usuário (tabela 'users' no banco)
-try {
-    // Consultar informações do usuário na tabela 'users'
-    $stmt_user = $pdo->prepare("SELECT nome, email FROM users WHERE id = :usuario_id");
-    $stmt_user->bindParam(':usuario_id', $usuario_id);
-    $stmt_user->execute();
-    $user_info = $stmt_user->fetch(PDO::FETCH_ASSOC);
-
-    if ($user_info) {
-        $usuario_nome = $user_info['nome'];
-        $usuario_email = $user_info['email'];
-    } else {
-        throw new Exception("Usuário não encontrado.");
-    }
-    
-    // Atualizar dados do usuário
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $novo_nome = trim($_POST['nome']);
-        $novo_email = trim($_POST['email']);
-        $nova_senha = trim($_POST['senha']);
-        $confirmar_senha = trim($_POST['confirmar_senha']);
-        
-        // Validar senhas
-        if (!empty($nova_senha) && $nova_senha === $confirmar_senha) {
-            // Atualizar senha, se fornecida
-            $stmt_update = $pdo->prepare("UPDATE users SET nome = :nome, email = :email, senha = :senha WHERE id = :usuario_id");
-            $stmt_update->bindParam(':nome', $novo_nome);
-            $stmt_update->bindParam(':email', $novo_email);
-            $stmt_update->bindParam(':senha', password_hash($nova_senha, PASSWORD_DEFAULT)); // Criptografando a senha
-            $stmt_update->bindParam(':usuario_id', $usuario_id);
-        } else {
-            // Atualizar sem senha
-            $stmt_update = $pdo->prepare("UPDATE users SET nome = :nome, email = :email WHERE id = :usuario_id");
-            $stmt_update->bindParam(':nome', $novo_nome);
-            $stmt_update->bindParam(':email', $novo_email);
-            $stmt_update->bindParam(':usuario_id', $usuario_id);
-        }
-        
-        if ($stmt_update->execute()) {
-            // Atualizar as variáveis de sessão com os novos dados
-            $_SESSION['user_nome'] = $novo_nome;
-            $_SESSION['user_email'] = $novo_email;
-            header("Location: perfil.php");
-            exit;
-        } else {
-            $erro = "Erro ao atualizar informações.";
-        }
-    }
-} catch (PDOException $e) {
-    die("Erro ao buscar ou atualizar dados: " . $e->getMessage());
-} catch (Exception $e) {
-    die($e->getMessage());
+if (!isset($_SESSION['user_id'])) {
+    // Redireciona para a página de login se não houver sessão ativa
+    header("Location: index.php");
+    exit();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil - Professor</title>
-    <link rel="stylesheet" href="dashboard_professor.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
-    <style>
-    body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil - Sistema de Irrigação</title>
+  <link rel="stylesheet" href="assets/css/dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Scripts Firebase com Módulo -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, updateEmail, updatePassword, updateProfile } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getDatabase } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-.perfil-container {
-    width: 80%;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBKxeTlLyWREGLcENJD4iMiM8_feKKiQO0",
+      authDomain: "pi3semestre-23089.firebaseapp.com",
+      databaseURL: "https://pi3semestre-23089-default-rtdb.firebaseio.com",
+      projectId: "pi3semestre-23089",
+      storageBucket: "pi3semestre-23089.firebasestorage.app",
+      messagingSenderId: "115992833105",
+      appId: "1:115992833105:web:6743b38c81aa66dd5edc70",
+      measurementId: "G-HBJCYZEP19"
+    };
 
-h1 {
-    text-align: center;
-}
+    // Inicializa o Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
 
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
+    // Verifica se o usuário está autenticado
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        const userEmail = user.email || "Email não disponível";
+        const userName = userEmail.slice(0, 5);  // Pega os primeiros 5 caracteres do email
+        const lastLogin = user.metadata.lastSignInTime
+          ? new Date(user.metadata.lastSignInTime).toLocaleString()
+          : "Último acesso desconhecido";
 
-label {
-    font-size: 14px;
-    font-weight: bold;
-}
+        document.getElementById("user-name").textContent = userName;
+        document.getElementById("user-email").textContent = userEmail;
+        document.getElementById("last-login").textContent = lastLogin;
+      } else {
+        window.location.replace("login.html");
+      }
+    });
 
-input {
-    padding: 8px;
-    font-size: 14px;
-    width: 100%;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-}
+    // Função para atualizar email, nome ou senha
+    window.updateUserInfo = function() {
+      const user = auth.currentUser;
 
-button {
-    padding: 10px;
-    background-color: #c53c3c;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
+      const newEmail = document.getElementById("new-email").value;
+      const newPassword = document.getElementById("new-password").value;
+      const newName = document.getElementById("new-name").value;
 
-button:hover {
-    background-color: #e02626;
-}
+      // Validação do nome (máximo 6 caracteres)
+      if (newName.length > 6) {
+        alert("O nome deve ter no máximo 6 caracteres.");
+        return;
+      }
 
+      // Atualiza o nome
+      if (newName) {
+        updateProfile(user, {
+          displayName: newName
+        }).then(() => {
+          alert("Nome atualizado com sucesso!");
+        }).catch((error) => {
+          console.error("Erro ao atualizar o nome:", error);
+        });
+      }
 
-</style>
+      // Atualiza o email
+      if (newEmail) {
+        updateEmail(user, newEmail).then(() => {
+          alert("Email atualizado com sucesso!");
+        }).catch((error) => {
+          console.error("Erro ao atualizar o email:", error);
+        });
+      }
+
+      // Atualiza a senha
+      if (newPassword) {
+        updatePassword(user, newPassword).then(() => {
+          alert("Senha atualizada com sucesso!");
+        }).catch((error) => {
+          console.error("Erro ao atualizar a senha:", error);
+        });
+      }
+    }
+  </script>
+
+  <link rel="shortcut icon" type="image/png" href="assets/img/logo.jpg">
 </head>
 <body>
+  <div class="container">
+    <!-- Barra Lateral -->
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <img src="assets/img/logo.jpg">
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="dashboard.php">Visão Geral</a></li>
+        <li><a href="perfil.php">Perfil</a></li>
+        <li><a href="sensores.php">Sensores</a></li>
+        <li><a href="ajuda.php">Ajuda</a></li>
+        <li><a href="index.php" id="logout">Sair</a></li>
+      </ul>
+    </nav>
 
-<div class="dashboard-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <img src="img/logo.jpg" id="logo" alt="Logo">
-                <h2>Bem-vindo, <?php echo htmlspecialchars($usuario_nome); ?>!</h2>
-                <p>Email: <?php echo htmlspecialchars($usuario_email); ?></p>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li><a href="professor_dashboard.php"><i class="fas fa-tachometer-alt"></i> Início</a></li>
-                    <li><a href="perfil.php"><i class="fas fa-user"></i> Perfil</a></li>
-                    <li><a href="justificativa.php"><i class="fas fa-clipboard-check"></i> Justificativas</a></li>
-                    <li><a href="reposicao.php"><i class="fas fa-sync-alt"></i> Reposições</a></li>
-                    <li><a href="agenda.php"><i class="fas fa-calendar-alt"></i> Agenda</a></li>
-                    <li><a href="documentos.php"><i class="fas fa-file-alt"></i> Documentos</a></li>
-                    <li class="sobre"><a href="sobre.php"><i class="fas fa-info-circle"></i> Sobre</a></li>
-                    <li class="ajuda"><a href="ajuda.php"><i class="fas fa-question-circle"></i> Ajuda</a></li>
-                    <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
-                </ul>
-            </nav>
+    <!-- Conteúdo Principal -->
+    <div class="main-content">
+      <header class="header">
+        <h1>Perfil do Usuário</h1>
+      </header>
+
+      <!-- Informações do Perfil -->
+      <section class="user-profile" id="user-profile">
+        <h2>Detalhes do Perfil</h2>
+        <div class="profile-info">
+          <div class="profile-item">
+            <p><strong>Nome:</strong> <span id="user-name">Carregando...</span></p>
+          </div>
+          <div class="profile-item">
+            <p><strong>Email:</strong> <span id="user-email">Carregando...</span></p>
+          </div>
+          <div class="profile-item">
+            <p><strong>Último Acesso:</strong> <span id="last-login">Carregando...</span></p>
+          </div>
         </div>
-        <div class="perfil-container">
-        <h2>Perfil - <?php echo htmlspecialchars($usuario_nome); ?></h2>
-        
-        <!-- Formulário para editar informações do perfil -->
-        <form action="perfil.php" method="POST">
-            <label for="nome">Nome</label>
-            <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($usuario_nome); ?>" required>
-            
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($usuario_email); ?>" required>
-            
-            <label for="senha">Nova Senha</label>
-            <input type="password" id="senha" name="senha" placeholder="Digite a nova senha (se quiser alterar)">
-            
-            <label for="confirmar_senha">Confirmar Nova Senha</label>
-            <input type="password" id="confirmar_senha" name="confirmar_senha" placeholder="Confirme a nova senha">
-            
-            <?php if (isset($erro)): ?>
-                <div class="erro"><?php echo htmlspecialchars($erro); ?></div>
-            <?php endif; ?>
-            
-            <button type="submit">Salvar Alterações</button>
+      </section>
+
+      <!-- Formulário para Atualização -->
+      <section class="update-info">
+        <h2>Atualizar Informações</h2>
+        <form id="update-form" onsubmit="event.preventDefault(); updateUserInfo();">
+          <div class="form-group">
+            <label for="new-name">Novo Nome (máximo 6 caracteres):</label>
+            <input type="text" id="new-name" maxlength="6" placeholder="Nome" />
+          </div>
+          <div class="form-group">
+            <label for="new-email">Novo Email:</label>
+            <input type="email" id="new-email" placeholder="Novo email" />
+          </div>
+          <div class="form-group">
+            <label for="new-password">Nova Senha:</label>
+            <input type="password" id="new-password" placeholder="Nova senha" />
+          </div>
+          <button type="submit" class="btn">Atualizar</button>
         </form>
+      </section>
     </div>
+
+    <!-- Rodapé -->
+    <footer class="footer">
+      <p>&copy; 2024 Sistema de Irrigação - Todos os direitos reservados.</p>
+    </footer>
+  </div>
 </body>
 </html>
